@@ -1,26 +1,8 @@
 <?php
-//Activar las variables de sessiones
 session_start();
-//----------------------------------
+require_once 'helpers/dd.php';
 
-//Estamos importando las funcionalidades de poder enviar un correo electrónico
-use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\Exception;
-use PHPMailer\PHPMailer\SMTP;
-
-require 'librerias/PHPMailer/src/Exception.php';
-require 'librerias/PHPMailer/src/PHPMailer.php';
-require 'librerias/PHPMailer/src/SMTP.php';
-
-//----------------------------------
-
-
-require ('helpers/dd.php');
-function saludar($nom){
-    return 'Bienvenido a nuestro sitio web '.$nom;
-}
-//Crear una función llamada sumar() que retorne la sumatoria de dos valores
-function validarUsuarioRegistro($datos,$imagen){
+function validarUsuarioRegistro($datos){
     $errores =[];
     if (trim($datos['nombre']) === '') {
         $errores['nombre']  = "El campo nombre no puede estar vacio";
@@ -36,25 +18,18 @@ function validarUsuarioRegistro($datos,$imagen){
     }else if (strlen(trim($datos['password']))<6) {
         $errores['password']  = "El campo clave no puede tener menos de 6 caracteres";
     }
-     
-
-    if (trim($datos['repassword']) === '') {
-        $errores['repassword']  = "El campo de rectificación no puede estar vacio";
-    }else if (strlen(trim($datos['repassword'])) < 6) {
-        $errores['repassword'] = "El campo de rectificación no puede tener menos de 6 caracteres";
+    if (trim($datos['confirm_password']) === '') {
+        $errores['confirm_password']  = "El campo de rectificación no puede estar vacio";
+    }else if (strlen(trim($datos['confirm_password'])) < 6) {
+        $errores['confirm_password'] = "El campo de rectificación no puede tener menos de 6 caracteres";
     }
-
-    //comprobar si password y repassword son iguales
-    if (trim($datos['password']) != trim($datos['repassword'])) {
-        $errores['repassword']  = "El campo de rectificacion no es igual al campo clave";
+    if (trim($datos['password']) != trim($datos['confirm_password'])) {
+        $errores['confirm_password']  = "El campo de rectificacion no es igual al campo clave";
     }
-    //Validar la imagen - Avatar
+    //validar fecha de nacimiento//
     if(isset($imagen)){
-        //dd($imagen);
         $avatar = $imagen['avatar']['name'];
-        //dd($avatar);
         $ext = pathinfo($avatar,PATHINFO_EXTENSION);
-        //dd($ext);
         if($imagen['avatar']['error'] !=0){
             $errores['avatar'] = "Debe subir su avatar";
         }elseif($ext != 'jpg' && $ext != 'jpeg' && $ext != 'png'){
@@ -66,51 +41,77 @@ function validarUsuarioRegistro($datos,$imagen){
     return $errores;
 }
 
-//Función que arma el registro del usuario
+
+//----------------------- UPDATE----------------------- //
+
 function armarUsuario($datos){
-    //dd($datos);
     $usuario = [
         "nombre" => $datos['nombre'],
         "apellido" => $datos['apellido'],
         "email" => $datos['email'],
         "password" => $datos['password'],
+        "fechaNacimiento" => $datos['fechaNacimiento'],
         "perfil" => 1
     ];
-    //dd($usuario);
     return $usuario;
 }
-//Armar imagen
+//----------------axel ---------------
+function armarDatos($datos)
+{
+    //dd($datos);
+    $carga = [
+        "nombre" => $datos['nombre'],
+        "localidad" => $datos['localidad'],
+        "ubicacion" => $datos['ubicacion'],
+        "numero" => $datos['numero'],
+        "email" => $datos['email'],
+        "paginaWeb" => $datos['paginaWeb'],
+        "descripcion" => $datos['descripcion'],
+        "tipo" => $datos['tipo'],
+        "tabla" => $datos['tabla']
+    ];
+    //dd($carga);
+    return $carga;
+}
+
+function imagenBD($imagen)
+{
+    dd($imagen);
+    $avatar = $imagen['imagen']['name'];
+    dd($avatar);
+    $ext = pathinfo($avatar, PATHINFO_EXTENSION);
+    $archivoOrigen = $imagen['imagen']['tmp_name'];
+    $archivoDestino = dirname(__DIR__) . '/img/';
+    $avatar = uniqid('img-') . '.' . $ext;
+    //dd($avatar);
+    $archivoDestino = $archivoDestino . $avatar;
+    //Voy a guardar en el servidor la imagen o el archivo
+    move_uploaded_file($archivoOrigen, $archivoDestino);
+    //dd($avatar);
+    return $avatar;
+}
+
+//------------------------------------------------
+
 function armarImagen($imagen){
-    //dd($imagen);
     $avatar = $imagen['avatar']['name'];
     $ext = pathinfo($avatar,PATHINFO_EXTENSION);
     $archivoOrigen = $imagen['avatar']['tmp_name'];
-    $archivoDestino = dirname(__DIR__).'/imagenes/';
+    $archivoDestino = dirname(__DIR__).'../imagenes/';
     $avatar = uniqid('avatar-').'.'.$ext;
-    //dd($avatar);
     $archivoDestino = $archivoDestino.$avatar;
-    //Voy a guardar en el servidor la imagen o el archivo
     move_uploaded_file($archivoOrigen,$archivoDestino);
-    //dd($avatar);
     return $avatar;
-}    
+}   
 
-
-//Función para guardar el usuario armado 
-function guardarUsuario($usuario){
-    //dd($usuario);
-    //Como recibimos un archivo en formato array asociativo, debemos convertirlo a un archivo en formato JSON
-    $archivoJSON = json_encode($usuario);
-    //dd($archivoJSON);
-    file_put_contents("datos.json", $archivoJSON.PHP_EOL,FILE_APPEND); 
-}
-
-//Función para conectar con la Base de Datos
-//                Servidor(locahost) ,Base de Datos(mascotas), Usuario(root), password("")
-function conexion($host,$dbname,$usuario,$password){
+$server= 'localhost';
+$username='root';
+$password ='';
+$dbname = 'comodoroturismo';
+function conexion($server,$dbname,$username,$password){
     try{
-        $dsn = "mysql:host=$host;dbname=$dbname";
-        $bd = new PDO($dsn, $usuario, $password);
+        $dsn = "mysql:host=$server;dbname=$dbname";
+        $bd = new PDO($dsn, $username, $password);
         return $bd;
     }catch(PDOException $error){
         echo "<h2 style='color:white; text-align:center; background-color:tomato; padding:20px'> Upps ! Ocurrio un error " . $error->getMessage() ."</h2>";
@@ -127,10 +128,11 @@ function guardarUsuarioBD($bd,$tabla,$datos,$imagen){
     $email = $datos['email'];
     $password = password_hash($datos['password'],PASSWORD_DEFAULT) ;
     $perfil = 1; 
+    $fechaNacimiento =  $datos['fechaNacimiento'];
     $avatar = $imagen;   
     //2.- Armar la consulta
     //                            Nombres de los campos en la tabla
-    $sql = "insert into $tabla (nombre,apellido,email,password,perfil,avatar) values (:nombre,:apellido,:email,:password,:perfil,:avatar)";
+    $sql = "insert into $tabla (nombre,apellido,email,password,perfil,avatar,fechaNacimiento) values (:nombre,:apellido,:email,:password,:perfil,:avatar,:fechaNacimiento)";
     //3.- Preparar la consulta
     $query = $bd->prepare($sql);
     //4.- Continuo con la preparación de la consulta de manera blindada
@@ -140,12 +142,13 @@ function guardarUsuarioBD($bd,$tabla,$datos,$imagen){
     $query->bindValue(':password', $password);
     $query->bindValue(':perfil', $perfil);
     $query->bindValue(':avatar',$avatar);
+    $query->bindValue(':fechaNacimiento',$fechaNacimiento);
     //5.- Ejecutar la consulta
     $query->execute();
-}
+} 
 //Función para Listar los usuarios registrados en la tabla ( usuarios ) de la Base de datos
 
-function listar($bd,$tabla){
+function listar($bd,$tabla){ 
     //1.- Armar la consulta
     $sql = "select * from  $tabla";
     //2.- Preparar la consulta
@@ -157,11 +160,7 @@ function listar($bd,$tabla){
     //dd($usuarios);
     return $resultados;
 }
-
-
-//------------------------------------------------------
-//Aquí dispongo las funciones del Login
-//------------------------------------------------------
+//-------------MAÑANA ARMAR EL LOGIN ---------//
 function validarUsuarioLogin($datos){
     $errores =[];
     if (trim($datos['email']) === '') {
@@ -175,9 +174,29 @@ function validarUsuarioLogin($datos){
 
     return $errores;
 }
+//------------- busqueada--------------------------
+//axel--------------------
+function buscar($bd, $tabla, $dato, $dato1, $dato2, $dato3, $dato4, $dato5, $dato6, $dato7, $dato8)
+{
+    //dd($_GET);
+    //1.- Armar la consulta
+    if ($dato4 == "") {
+        $sql = "SELECT * FROM `$tabla` WHERE `$dato` IN ('$dato1','$dato2')";
+    } elseif($dato1 == "") {
+        $sql = "SELECT * FROM `$tabla` WHERE `$dato3` IN ('$dato4','$dato5', '$dato6', '$dato7', '$dato8') ORDER BY `id` ASC";
+    } else {
+        $sql = "SELECT * FROM `$tabla` WHERE `$dato` IN ('$dato1','$dato2') AND `$dato3` IN ('$dato4','$dato5', '$dato6', '$dato7', '$dato8') ORDER BY `id` ASC";
+    }
 
-//Buscamos por email al usuario que se está logueando
-function buscar($bd,$tabla,$dato){
+    $query = $bd->prepare($sql);
+    //3.- Ejecutar la consulta
+    $query->execute();
+    //4.- Traer los datos de la consulta
+    $resultado = $query->fetchAll(PDO::FETCH_ASSOC);
+    return $resultado;
+}
+
+function buscar1($bd,$tabla,$dato){
     //dd($_GET);
     //1.- Armar la consulta
     
@@ -197,6 +216,27 @@ function buscar($bd,$tabla,$dato){
     return $resultato;
 }
 
+//----------------------------
+//Buscamos por email al usuario que se está logueando
+function buscarU($bd,$tabla,$dato){
+    //dd($_GET);
+    //1.- Armar la consulta
+    
+    if($_POST){
+        $sql = "select * from $tabla where email = '$dato'";    
+    }else{
+        $sql = "select * from $tabla where id = $dato";
+    }
+    
+    //2.- Preparar la consulta
+    $query = $bd->prepare($sql);
+    //3.- Ejecutar la consulta
+    $query->execute();
+    //4.- Traer los datos de la consulta
+    $resultato = $query->fetch(PDO::FETCH_ASSOC);
+    //dd($usuario);
+    return $resultato;
+}
 //Función para setear el usuario (Session - Cookies)
 function seteoUsuario($usuario,$datos){
     //dd($datos);
@@ -234,86 +274,4 @@ function ingresarUsuario(){
         }
         return false;
     }
-
 }
-
-
-//Función que se enge enviar el email al usuario
-function enviarEmail($datos){
-    //Aquí debo disponer los datos de la persona a la cual se le enviará el corro
-    $email = $datos['email'];
-    $nombreCompleto = $datos['nombre'].' '.$datos['apellido'];
-
-    //Create an instance; passing `true` enables exceptions
-    $mail = new PHPMailer(true);
-
-    try {
-        //Server settings
-        $mail->SMTPDebug = SMTP::DEBUG_SERVER;                      // Enable verbose debug output
-        $mail->isSMTP();                                            // Send using SMTP
-        $mail->Host       = 'smtp.gmail.com';                    // Set the SMTP server to send through
-        $mail->SMTPAuth   = true;                                   // Enable SMTP authentication
-        $mail->Username   = 'angel.daniel.fuentes.segura@gmail.com';                     // SMTP username
-        //Aquí deben colocar la clave de su correo electrónico
-        $mail->Password   = 'MiSuperClaveSecreta';                               // SMTP password
-        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;         // Enable TLS encryption; `PHPMailer::ENCRYPTION_SMTPS` encouraged
-        $mail->Port       = 587;                                    // TCP port to connect to, use 465 for `PHPMailer::ENCRYPTION_SMTPS` above
-
-        //Recipients
-        $mail->setFrom('angel.daniel.fuentes.segura@gmail.com', 'Angel Daniel Fuentes');
-        $mail->addAddress($email, $nombreCompleto);     // Add a recipient
-        //$mail->addAddress('ellen@example.com');               // Name is optional
-        //$mail->addReplyTo('info@example.com', 'Information');
-        //$mail->addCC('cc@example.com');
-        //$mail->addBCC('bcc@example.com');
-
-        // Attachments
-        //$mail->addAttachment('/var/tmp/file.tar.gz');         // Add attachments
-        //$mail->addAttachment('/tmp/image.jpg', 'new.jpg');    // Optional name
-
-        // Content
-        $mail->isHTML(true);                                  // Set email format to HTML
-        $mail->Subject = 'Gracias por registrarte en nuestro sitio web';
-        $mail->Body    = 'Muy pronto nos estaremos contactando y te haremos llegar nuevos recursos y eventos que vamos a realizar <b>Muchas gracias por preferirnos!</b>';
-        //$mail->AltBody = 'This is the body in plain text for non-HTML mail clients';
-
-        $mail->send();
-        echo 'Correo enviado de manera satisfactoria';
-        //exit;
-    } catch (Exception $e) {
-        echo "El correo no se logro enviar: {$mail->ErrorInfo}";
-        //exit;
-    }
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

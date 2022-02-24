@@ -1,3 +1,14 @@
+<?php 
+    //require_once('helpers/dd.php');
+    require('controladores/funciones.php');
+    //if(ingresarUsuario() === true){
+        if (!isset($_SESSION['nombre'])) {
+            $nombre = "";  
+        } else{
+            $nombre = $_SESSION['nombre'].' '.$_SESSION['apellido'];}
+
+    $bd = conexion('localhost','comodoroturismo','root','');       
+?>
 <!doctype html>
 <html lang="es">
   <head>
@@ -6,7 +17,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" 
+    integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
     <link rel="stylesheet" href="css/styles.css">
 
     <title>Comodoro Rivadavia</title>
@@ -15,7 +27,7 @@
      <!-- PHP NAVEGADOR -->
 
       
-        <?php require_once('Partials/navegador.php')?>
+      <?php require_once('Partials/navegador.php')?>
       
 
      <!-- CARRUSEL -->    
@@ -66,49 +78,67 @@
 </section>
     <!-- Servicios -->
 
-<section class="container-fluid">
-<div class="container">
-  <div class="row w-75 mx-auto my-5 destacados">
-    <div class="col border p-3 mx-auto">
-      <img src="img/aniversario.jpg" class="rounded" alt="aniversario" width="360" height="320">
-      <div>
-        <h3 class="fs-5 mt-4 px-4 pb-1">Aniversario</h3>
-        <p class="px-4">Veni a celebrar el aniversario de la ciudad</p>
+<section class="container-fluid row row-cols-1 row-cols-2 row-cols-3 mx-auto gap-0 ">
+  <div class="col mx-auto">
+    <div class="card shadow p-3 mb-5 bg-body rounded" style="width: 18rem;">
+      <img src="img/aniversario.jpg" class="card-img-top" alt="aniversario">
+      <div class="card-body">
+        <h5 class="card-title">Aniversario</h5>
+        <p class="card-text">Veni a celebrar el aniversario de la ciudad</p>
+        <a href="#" class="btn btn-primary">Ver detalles</a>
       </div>
     </div>
-    <div class="col border p-3 mx-auto">
-      <img src="img/paintball.jpg" class="rounded" alt="paintball" width="360" height="320">
-      <div>
-        <h3 class="fs-5 mt-4 px-4 pb-1">Paintball</h3>
-        <p class="px-4">Participa en el paintball de Comodoro</p>
-      </div>
-    </div>
-    
   </div>
-  <div class="row w-75 mx-auto my-5 destacados">
-    <div class="col border p-3 mx-auto">
-      <img src="img/carnaval.jpg" class="rounded" alt="carnaval" width="360" height="320">
-      <div>
-        <h3 class="fs-5 mt-4 px-4 pb-1">Carnavales</h3>
-        <p class="px-4">Disfruta de los carnavales en el centro de la ciudad</p>
+  <div class="col mx-auto">
+    <div class="card shadow p-3 mb-5 bg-body rounded" style="width: 18rem;">
+      <img src="img/paintball.jpg" class="card-img-top" alt="paintball">
+      <div class="card-body">
+        <h5 class="card-title">Paintball</h5>
+        <p class="card-text">Participa en el paintball de la zona</p>
+        <a href="#" class="btn btn-primary">Ver detalles</a>
       </div>
     </div>
-    <div class="col border p-3 mx-auto">
-      <img src="img/chenque.jpg" class="rounded" alt="chenque" width="360" height="320">
-      <div>
-        <h3 class="fs-5 mt-4 px-4 pb-1">Chenque</h3>
-        <p class="px-4">Da un paseo tranquilo por la hermosa ciudad de Comodoro Rivadavia</p>
+  </div>  
+  
+
+
+  
+</section> 
+<section class="container-fluid row row-cols-1 row-cols-2 row-cols-3 mx-auto gap-0">
+  <div class="col mx-auto">
+      <div class="card shadow p-3 mb-5 bg-body rounded" style="width: 18rem;">
+            <img src="img/carnaval.jpg" class="card-img-top" alt="carnavales">
+            <div class="card-body">
+              <h5 class="card-title">Carnavales</h5>
+              <p class="card-text">Disfruta de los carnavales en el centro de la ciudad</p>
+              <a href="#" class="btn btn-primary">Ver detalles</a>
+            </div>
+        </div>
+    </div>
+    <div class="col mx-auto">
+      <div class="card shadow p-3 mb-5 bg-body rounded" style="width: 18rem;">
+        <img src="img/chenque.jpg" class="card-img-top" alt="chenque">
+        <div class="card-body">
+          <h5 class="card-title">Chenque</h5>
+          <p class="card-text">Da un paseo tranquilo por la hermosa ciudad de Comodor Rivadavia</p>
+          <a href="#" class="btn btn-primary">Ver detalles</a>
+        </div>
       </div>
     </div>
-    
-  </div>
-</div>
-</section>  
+</section>
+<section class="container-fluid row" >
+ 
+</section> 
+
+<div class="text-primary mb-4" id="typewriter"></div>
+
 <footer class="w-100 bg-primary text-light  d-flex  align-items-center justify-content-center flex-wrap">
-  <p class="fs-5 px-3  pt-3">Eber Unquen, Axel Huichante, Agustín Mella, Brisa Molina &copy; Todos Los Derechos Reservados 2022</p>
+  <p class="fs-5 px-3  pt-3">Eber Unquen, Axel Huichante, Agustín Mella &copy; Todos Los Derechos Reservados 2022</p>
 </footer>  
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
+    <script src="main.js"></script>
 
   </body>
 </html>
